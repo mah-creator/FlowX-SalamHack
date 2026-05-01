@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salamhack.local/schemas/User.json",
+  "title": "User",
+  "type": "object",
+  "required": ["fullName", "email", "accountType", "verified"],
+  "properties": {
+    "fullName": { "type": "string" },
+    "email": { "type": "string", "format": "email" },
+    "accountType": { "type": "string", "enum": ["Individual", "Business"] },
+    "verified": { "type": "boolean" }
+  },
+  "additionalProperties": false,
+  "x-source-citation": "frontend/src/types.ts:12-17"
+}

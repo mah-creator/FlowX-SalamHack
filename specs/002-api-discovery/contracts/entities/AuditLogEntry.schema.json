@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salamhack.local/schemas/AuditLogEntry.json",
+  "title": "AuditLogEntry",
+  "type": "object",
+  "required": ["time", "actor", "action"],
+  "properties": {
+    "time": { "type": "string", "format": "date-time" },
+    "actor": { "type": "string" },
+    "action": { "type": "string" }
+  },
+  "additionalProperties": false,
+  "x-source-citation": "frontend/src/lib/demoStore.ts:28"
+}

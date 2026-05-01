@@ -1,5 +1,12 @@
 # Backend Implementation Plan (Spec Kit Driven)
 
+> **Stack note (Phase 0 reconciliation, 2026-04-29)**: This plan was
+> originally authored against TypeScript/Node. The project has since
+> selected Laravel (PHP) as the backend framework family. The
+> constitution at `.specify/memory/constitution.md` is the authoritative
+> record of that decision; the Phase 0 and Phase 2 sections below have
+> been updated to match. On any further conflict, the constitution wins.
+
 ## Executive Summary
 
 This document outlines a structured, spec-driven approach to implementing a backend that exactly matches the API expectations of an existing React frontend application. The goal is to ensure full compatibility between frontend and backend without requiring any changes to the frontend codebase.
@@ -34,7 +41,7 @@ The core principle of this implementation is **contract fidelity** — the backe
 
 * Backend must strictly match frontend API usage
 * All endpoints must have contract tests
-* Use TypeScript and structured architecture
+* Use Laravel (PHP) with idiomatic framework architecture (FormRequest validation, API Resources, Eloquent, central exception handler, Sanctum/Passport)
 
 ---
 
@@ -66,7 +73,7 @@ No backend logic is implemented in this phase.
 
 **Key Outputs:**
 
-* Project setup (Node.js + TypeScript)
+* Project setup (Laravel + PHP, versions pinned in this phase's plan and in `composer.json`)
 * Routing structure
 * Middleware (CORS, validation, logging)
 * Error handling system
@@ -114,6 +121,23 @@ Tests are expected to fail initially.
 * May use temporary or in-memory data storage
 
 ---
+## Phase 4.5 — API Alignment & Refactor
+
+**Objective:** Update backend APIs to match the contracts defined in the new frontend project FolwX-main.
+
+**Key Outputs:**
+* Contract extraction from updated frontend
+* Generated contract test suite
+* Updated routes, controllers, FormRequests, API Resources
+* Aligned authentication & error handling
+* Passing contract tests
+
+**Scope:**
+* Apply changes to all existing endpoints after Phase 4 implementation.
+* No data persistence changes; focus on contract fidelity.
+
+---
+
 
 ## Phase 5 — Data Persistence
 

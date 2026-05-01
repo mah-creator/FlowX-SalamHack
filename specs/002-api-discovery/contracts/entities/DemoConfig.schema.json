@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salamhack.local/schemas/DemoConfig.json",
+  "title": "DemoConfig",
+  "type": "object",
+  "required": ["feePercent", "exchangeRate", "rateLockMinutes", "paymentWindowMinutes"],
+  "properties": {
+    "feePercent": { "type": "number" },
+    "exchangeRate": { "type": "number" },
+    "rateLockMinutes": { "type": "number" },
+    "paymentWindowMinutes": { "type": "number" }
+  },
+  "additionalProperties": false,
+  "x-source-citation": "frontend/src/lib/demoStore.ts:31-36"
+}

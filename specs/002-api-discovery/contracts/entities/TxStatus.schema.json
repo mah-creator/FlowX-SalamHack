@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salamhack.local/schemas/TxStatus.json",
+  "title": "TxStatus",
+  "type": "string",
+  "enum": [
+    "Pending Request",
+    "Match Found",
+    "Awaiting Deposits",
+    "Deposit Confirmed Partially",
+    "Both Deposits Confirmed",
+    "Processing Payouts",
+    "Completed",
+    "Under Review",
+    "Failed",
+    "Refunded",
+    "Disputed"
+  ],
+  "x-source-citation": "frontend/src/lib/demoStore.ts:1-12"
+}

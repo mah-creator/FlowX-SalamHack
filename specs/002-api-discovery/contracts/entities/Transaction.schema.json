@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salamhack.local/schemas/Transaction.json",
+  "title": "Transaction",
+  "type": "object",
+  "required": [
+    "id",
+    "source",
+    "destination",
+    "amount",
+    "currency",
+    "status",
+    "feePercent",
+    "exchangeRate",
+    "receivableAmount",
+    "createdAt",
+    "depositA",
+    "depositB",
+    "auditLog"
+  ],
+  "properties": {
+    "id": { "type": "string" },
+    "source": { "type": "string", "enum": ["Gaza", "Egypt"] },
+    "destination": { "type": "string", "enum": ["Gaza", "Egypt"] },
+    "amount": { "type": "number" },
+    "currency": { "type": "string", "enum": ["USD", "EGP", "ILS"] },
+    "status": { "$ref": "./TxStatus.schema.json" },
+    "feePercent": { "type": "number" },
+    "exchangeRate": { "type": "number" },
+    "receivableAmount": { "type": "number" },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "depositA": { "type": "boolean" },
+    "depositB": { "type": "boolean" },
+    "disputeReason": { "type": "string" },
+    "auditLog": {
+      "type": "array",
+      "items": { "$ref": "./AuditLogEntry.schema.json" }
+    }
+  },
+  "additionalProperties": false,
+  "x-source-citation": "frontend/src/lib/demoStore.ts:14-29",
+  "x-id-origin-observed": "client-side via nextTxId(state.transactions.length)"
+}

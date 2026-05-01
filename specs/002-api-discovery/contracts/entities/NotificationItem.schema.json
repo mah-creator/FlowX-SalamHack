@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://salamhack.local/schemas/NotificationItem.json",
+  "title": "NotificationItem",
+  "type": "object",
+  "required": ["id", "message"],
+  "properties": {
+    "id": { "type": "string", "format": "uuid" },
+    "message": { "type": "string" }
+  },
+  "additionalProperties": false,
+  "x-source-citation": "frontend/src/lib/demoStore.ts:43-46",
+  "x-id-origin-observed": "client-side via crypto.randomUUID()"
+}

@@ -1,0 +1,598 @@
+openapi: 3.1.0
+info:
+  title: Salamhack Backend API Contract Phase 1 Discovery
+  description: Machine-readable sidecar to specs/002-api-discovery/api-contract.md. The Markdown is authoritative on any disagreement.
+  version: "1.0.0"
+x-last-updated: "2026-04-29"
+x-audit-commit: "6f29646"
+x-deliverable-status: "draft"
+servers: []
+paths:
+  /transactions:
+    get:
+      operationId: EP-001
+      summary: List transactions
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/pages/DashboardPage.tsx
+      x-phase3-grounding-note: Treat the dashboard transaction list as the de-facto read contract until the frontend wires the actual HTTP call.
+      x-frontend-flow: [DashboardPage]
+      responses:
+        "200":
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [transactions]
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+    post:
+      operationId: EP-003
+      summary: Create transaction
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/context/DemoContext.tsx:168-170
+      x-phase3-grounding-note: Treat the named DemoContextValue method and reducer action as the de-facto contract until the frontend wires the actual HTTP call.
+      x-frontend-operation: createTransaction
+      x-frontend-flow: [NewTransferPage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount, currency]
+              properties:
+                amount:
+                  type: number
+                currency:
+                  type: string
+                  enum: [USD, EGP, ILS]
+      responses:
+        "201":
+          description: Created transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+  /transactions/{id}:
+    get:
+      operationId: EP-002
+      summary: Read transaction
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/pages/TransactionStatusPage.tsx
+      x-phase3-grounding-note: Treat active transaction page reads as the de-facto contract; auto-transitions become observable through this read.
+      x-frontend-flow: [TransactionStatusPage, AwaitingDepositPage, MatchFoundPage, DisputePage]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      responses:
+        "200":
+          description: Transaction
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /transactions/{id}/cancel:
+    post:
+      operationId: EP-004
+      summary: Cancel transaction
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/context/DemoContext.tsx:171-184
+      x-phase3-grounding-note: Treat the named DemoContextValue method and reducer action as the de-facto contract until the frontend wires the actual HTTP call.
+      x-frontend-operation: cancelTransaction
+      x-frontend-flow: [AwaitingDepositPage]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      responses:
+        "200":
+          $ref: "#/components/responses/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /transactions/{id}/confirm-match:
+    post:
+      operationId: EP-005
+      summary: Confirm match
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/context/DemoContext.tsx:191-193
+      x-phase3-grounding-note: Treat the named DemoContextValue method and reducer action as the de-facto contract until the frontend wires the actual HTTP call.
+      x-frontend-operation: confirmMatch
+      x-frontend-flow: [MatchFoundPage]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      responses:
+        "200":
+          $ref: "#/components/responses/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /transactions/{id}/deposits:
+    post:
+      operationId: EP-006
+      summary: Confirm deposit
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/context/DemoContext.tsx:194-196
+      x-phase3-grounding-note: Treat the named DemoContextValue method and reducer action as the de-facto contract until the frontend wires the actual HTTP call.
+      x-frontend-operation: confirmDeposit
+      x-frontend-flow: [AwaitingDepositPage]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [party]
+              properties:
+                party:
+                  type: string
+                  enum: [A, B]
+      responses:
+        "200":
+          $ref: "#/components/responses/Transaction"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /transactions/{id}/process-payouts:
+    post:
+      operationId: EP-007
+      summary: Process payouts
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/context/DemoContext.tsx:197-219
+      x-phase3-grounding-note: Treat the named DemoContextValue method and reducer action as the de-facto contract until the frontend wires the actual HTTP call.
+      x-frontend-operation: processPayouts
+      x-frontend-flow: [TransactionStatusPage]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      responses:
+        "200":
+          $ref: "#/components/responses/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /transactions/{id}/disputes:
+    post:
+      operationId: EP-008
+      summary: Open dispute
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/context/DemoContext.tsx:220-226
+      x-phase3-grounding-note: Treat the named DemoContextValue method and reducer action as the de-facto contract until the frontend wires the actual HTTP call.
+      x-frontend-operation: openDispute
+      x-frontend-flow: [DisputePage]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/Transaction"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/transactions:
+    get:
+      operationId: EP-009
+      summary: List admin transactions
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/pages/AdminDashboardPage.tsx
+      x-phase3-grounding-note: Treat the admin dashboard transaction list as the de-facto contract until the frontend wires an admin read call.
+      x-frontend-flow: [AdminDashboardPage]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Transaction list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [transactions]
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+  /transactions/{id}/auto-match:
+    post:
+      operationId: EP-010
+      summary: Auto-match transaction
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/context/DemoContext.tsx:185-190
+      x-phase3-grounding-note: Treat the named DemoContextValue method and reducer action as the de-facto contract until the frontend wires the actual HTTP call.
+      x-frontend-operation: autoMatch
+      x-frontend-flow: [NewTransferPage, AdminDashboardPage]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      responses:
+        "200":
+          $ref: "#/components/responses/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/transactions/{id}/flag-risk:
+    post:
+      operationId: EP-011
+      summary: Flag risk
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/context/DemoContext.tsx:237-242
+      x-phase3-grounding-note: Treat the named DemoContextValue method and reducer action as the de-facto contract until the frontend wires the actual HTTP call.
+      x-frontend-operation: flagRisk
+      x-frontend-flow: [AdminDashboardPage]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      responses:
+        "200":
+          $ref: "#/components/responses/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/transactions/{id}/approve:
+    post:
+      operationId: EP-012
+      summary: Admin approve
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/context/DemoContext.tsx:243-251
+      x-phase3-grounding-note: Treat the named DemoContextValue method and reducer action as the de-facto contract until the frontend wires the actual HTTP call.
+      x-frontend-operation: adminApprove
+      x-frontend-flow: [AdminDashboardPage]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      responses:
+        "200":
+          $ref: "#/components/responses/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/transactions/{id}/refund:
+    post:
+      operationId: EP-013
+      summary: Admin refund
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/context/DemoContext.tsx:252-257
+      x-phase3-grounding-note: Treat the named DemoContextValue method and reducer action as the de-facto contract until the frontend wires the actual HTTP call.
+      x-frontend-operation: adminRefund
+      x-frontend-flow: [AdminDashboardPage]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      responses:
+        "200":
+          $ref: "#/components/responses/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /admin/transactions/{id}/resolve-dispute:
+    post:
+      operationId: EP-014
+      summary: Resolve dispute
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/context/DemoContext.tsx:227-236
+      x-phase3-grounding-note: Treat the named DemoContextValue method and reducer action as the de-facto contract until the frontend wires the actual HTTP call.
+      x-frontend-operation: resolveDispute
+      x-frontend-flow: [AdminDashboardPage]
+      parameters:
+        - $ref: "#/components/parameters/TransactionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [outcome]
+              properties:
+                outcome:
+                  type: string
+                  enum: [Completed, Refunded]
+      responses:
+        "200":
+          $ref: "#/components/responses/Transaction"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /auth/signup:
+    post:
+      operationId: EP-015
+      summary: Signup
+      x-classification: derived
+      x-source-citation: frontend/src/pages/SignupPage.tsx plus frontend/src/types.ts:12-17
+      x-phase3-grounding-note: No current frontend behavior grounds this; defer until the frontend wires signup or Phase 2 treats the recommended envelope as the de-facto contract.
+      x-frontend-flow: [SignupPage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fullName, email, accountType, password]
+              properties:
+                fullName:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                accountType:
+                  type: string
+                  enum: [Individual, Business]
+                password:
+                  type: string
+      responses:
+        "201":
+          $ref: "#/components/responses/UserToken"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "409":
+          $ref: "#/components/responses/Conflict"
+  /auth/verify:
+    post:
+      operationId: EP-016
+      summary: Verify account
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: frontend/src/pages/VerificationPage.tsx
+      x-phase3-grounding-note: No current frontend behavior grounds this; defer until the frontend wires verification or Phase 2 treats the recommended envelope as the de-facto contract.
+      x-frontend-flow: [VerificationPage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [documentType]
+              properties:
+                documentType:
+                  type: string
+                documentFile:
+                  type: string
+                selfieFile:
+                  type: string
+      responses:
+        "200":
+          description: Verified user
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user]
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+  /auth/login:
+    post:
+      operationId: EP-017
+      summary: Login
+      x-classification: derived
+      x-source-citation: derived from FR-010(b) auth recommendation
+      x-phase3-grounding-note: No current frontend behavior grounds this; deferred until the frontend wires login OR Phase 2 treats the recommended envelope as the de-facto contract under a Principle III amendment.
+      x-frontend-flow: [SignupPage]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+      responses:
+        "200":
+          $ref: "#/components/responses/UserToken"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+  /auth/logout:
+    post:
+      operationId: EP-018
+      summary: Logout
+      security:
+        - bearerAuth: []
+      x-classification: derived
+      x-source-citation: derived from FR-010(b) auth recommendation
+      x-phase3-grounding-note: No current frontend behavior grounds this; deferred until the frontend wires login OR Phase 2 treats the recommended envelope as the de-facto contract under a Principle III amendment.
+      x-frontend-flow: [SignupPage]
+      responses:
+        "204":
+          description: Logged out
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+components:
+  schemas:
+    User:
+      $ref: "./entities/User.schema.json"
+    Transaction:
+      $ref: "./entities/Transaction.schema.json"
+    TxStatus:
+      $ref: "./entities/TxStatus.schema.json"
+    NotificationItem:
+      $ref: "./entities/NotificationItem.schema.json"
+    AuditLogEntry:
+      $ref: "./entities/AuditLogEntry.schema.json"
+    DemoConfig:
+      $ref: "./entities/DemoConfig.schema.json"
+    ErrorEnvelope:
+      $ref: "./entities/ErrorEnvelope.schema.json"
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  parameters:
+    TransactionId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    Transaction:
+      description: Transaction
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Transaction"
+    UserToken:
+      description: User plus bearer token
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [user, token]
+            properties:
+              user:
+                $ref: "#/components/schemas/User"
+              token:
+                type: string
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Unauthenticated:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Forbidden:
+      description: Action forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+    Conflict:
+      description: Invalid state transition
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+security: []
+tags: []
