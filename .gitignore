@@ -2,7 +2,7 @@ node_modules/
 dist/
 build/
 *.log
-.env*
+
 backend/.env
 backend/vendor/
 backend/storage/*.key
