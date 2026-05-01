@@ -147,6 +147,8 @@
 /* FlowX imported design tokens: preserved from the uploaded app. */
 @theme inline {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --color-brand-blue: #1a2e4c;
+  --color-brand-teal: #0094ac;
   --color-navy-950: #000615;
   --color-navy-900: #0b1f3a;
   --color-navy-800: #1a2e4c;
@@ -207,5 +209,144 @@
   .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+}
+
+@layer utilities {
+  .gsap-hidden {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .mask-marquee {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 10%,
+      black 90%,
+      transparent
+    );
+  }
+
+  .problem-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.045;
+    background-image:
+      radial-gradient(
+        circle at 20% 20%,
+        rgba(26, 46, 76, 0.45) 0.7px,
+        transparent 0.8px
+      ),
+      radial-gradient(
+        circle at 80% 70%,
+        rgba(26, 46, 76, 0.35) 0.7px,
+        transparent 0.8px
+      );
+    background-size:
+      3px 3px,
+      4px 4px;
+    background-position:
+      0 0,
+      1px 1px;
+  }
+
+  .case-study-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.06;
+    background-image:
+      radial-gradient(
+        circle at 20% 15%,
+        rgba(255, 255, 255, 0.32) 0.7px,
+        transparent 0.8px
+      ),
+      radial-gradient(
+        circle at 75% 70%,
+        rgba(255, 255, 255, 0.22) 0.7px,
+        transparent 0.8px
+      );
+    background-size:
+      3px 3px,
+      4px 4px;
+    background-position:
+      0 0,
+      1px 1px;
+  }
+
+  .security-section::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.055;
+    background-image:
+      radial-gradient(
+        circle at 18% 18%,
+        rgba(255, 255, 255, 0.28) 0.7px,
+        transparent 0.8px
+      ),
+      radial-gradient(
+        circle at 78% 74%,
+        rgba(255, 255, 255, 0.2) 0.7px,
+        transparent 0.8px
+      );
+    background-size:
+      3px 3px,
+      4px 4px;
+    background-position:
+      0 0,
+      1px 1px;
+  }
+
+  .demo-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .footer-link {
+    position: relative;
+  }
+
+  .footer-link::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background-color: currentColor;
+    transition: width 0.3s ease;
+  }
+
+  .footer-link:hover::after {
+    width: 100%;
+  }
+
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .problem-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-rows: auto auto;
+    }
   }
 }

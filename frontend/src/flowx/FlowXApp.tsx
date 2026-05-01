@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider } from "@/core/providers/AuthProvider";
 import ProtectedRoute from "@/app/ProtectedRoute";
-import LandingPage from "@/features/auth/pages/LandingPage";
-import SignupPage from "@/features/auth/pages/SignupPage";
+import LandingPage from "@/features/landing/pages/LandingPage";
+import LoginPage from "@/features/landing/pages/LoginPage";
+import SignUpPage from "@/features/landing/pages/SignUpPage";
 import VerificationPage from "@/features/auth/pages/VerificationPage";
 import AdminVerificationQueuePage from "@/features/verification/pages/AdminVerificationQueuePage";
 import DashboardRouter from "@/features/dashboard/pages/DashboardRouter";
@@ -44,8 +45,8 @@ function FlowXRoutes() {
     <AuthProvider>
       <Routes>
         <Route path="/" element={<RootRoute />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/login" element={<SignupPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
+        <Route path="/login" element={<LoginPage />} />
 
         <Route
           path="/dashboard"
