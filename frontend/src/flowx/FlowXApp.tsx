@@ -9,8 +9,10 @@ import AdminVerificationQueuePage from "@/features/verification/pages/AdminVerif
 import DashboardRouter from "@/features/dashboard/pages/DashboardRouter";
 import AdminDashboardPage from "@/features/dashboard/pages/AdminDashboardPage";
 import DisputePage from "@/features/transfers/pages/DisputePage";
+import EscrowDepositPage from "@/features/transfers/pages/EscrowDepositPage";
 import MatchingPage from "@/features/transfers/pages/MatchingPage";
 import NewTransferPage from "@/features/transfers/pages/NewTransferPage";
+import PendingRequestsPage from "@/features/transfers/pages/PendingRequestsPage";
 import TransactionStatusPage from "@/features/transfers/pages/TransactionStatusPage";
 import {
   AnalyticsPage,
@@ -164,15 +166,23 @@ function FlowXRoutes() {
           }
         />
         <Route
-          path="/transfer/status/:id"
+          path="/transfer/pending"
           element={
-            <ProtectedRoute allowedRoles={["admin", "user"]}>
-              <TransactionStatusPage />
+            <ProtectedRoute allowedRoles={["user"]}>
+              <PendingRequestsPage />
             </ProtectedRoute>
           }
         />
         <Route
-          path="/transfer/status/:txId"
+          path="/transfer/escrow/:id"
+          element={
+            <ProtectedRoute allowedRoles={["user"]}>
+              <EscrowDepositPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transfer/status/:id"
           element={
             <ProtectedRoute allowedRoles={["admin", "user"]}>
               <TransactionStatusPage />

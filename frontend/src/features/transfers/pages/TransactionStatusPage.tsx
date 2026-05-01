@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { cn } from "@/shared/utils";
@@ -5,6 +6,11 @@ import Footer from "@/shared/components/layout/Footer";
 import Navbar from "@/shared/components/layout/Navbar";
 import Sidebar from "@/shared/components/layout/Sidebar";
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser";
+import { SERVER_CONNECTION_ERROR } from "@/services/apiClient";
+import {
+  formatTransferStatus,
+  transferStatusBadgeClass,
+} from "@/services/status";
 import { transfersService } from "@/services/transfers.service";
 import type { ApiTransfer, TransferStatus } from "@/services/types";
 
@@ -17,47 +23,64 @@ const steps = [
 ];
 
 function stepIndex(status: TransferStatus): number {
-  if (status === "PENDING_REQUEST") return 0;
-  if (status === "MATCH_FOUND") return 1;
+  if (
+    [
+      "PENDING_REQUEST",
+      "PENDING_MATCH",
+      "WAITING_FOR_MATCH",
+      "MATCH_PENDING",
+      "NO_MATCH_FOUND",
+    ].includes(status)
+  )
+    return 0;
+  if (["MATCH_FOUND", "MATCHED"].includes(status)) return 1;
   if (
     [
       "AWAITING_DEPOSIT",
       "DEPOSIT_PENDING",
+      "ESCROW_FUNDED",
       "DEPOSIT_CONFIRMED",
       "BOTH_DEPOSITS_CONFIRMED",
     ].includes(status)
   )
     return 2;
-  if (["PROCESSING_PAYOUT", "UNDER_REVIEW", "DISPUTED"].includes(status))
+  if (
+    [
+      "PROCESSING_PAYOUT",
+      "READY_FOR_PAYOUT",
+      "UNDER_REVIEW",
+      "DISPUTED",
+    ].includes(status)
+  )
     return 3;
   return 4;
 }
 
-function statusLabel(status: string) {
-  return status.replace(/_/g, " ");
-}
-
 export default function TransactionStatusPage() {
-  const { txId } = useParams();
   const { id } = useParams();
-  const transferId = id ?? txId;
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdmin, isUser } = useCurrentUser();
   const [tx, setTx] = useState<ApiTransfer | null>(null);
   const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [actionLoading, setActionLoading] = useState("");
 
   useEffect(() => {
-    if (!transferId) return;
+    if (!id) return;
+    setLoading(true);
+    setError("");
     void transfersService
-      .getTransferById(transferId)
+      .getTransferStatus(id)
       .then(setTx)
-      .catch(() => setTx(null));
-  }, [transferId]);
+      .catch(() => setError(SERVER_CONNECTION_ERROR))
+      .finally(() => setLoading(false));
+  }, [id]);
 
-  if (!tx) {
-    return <div className="p-8">Transaction not found.</div>;
-  }
+  if (loading) return <MainShell>Loading transaction status...</MainShell>;
+  if (error) return <MainShell>{error}</MainShell>;
+  if (!tx) return <MainShell>Transaction not found.</MainShell>;
 
   const current = stepIndex(tx.status);
   const successMessage =
@@ -70,24 +93,67 @@ export default function TransactionStatusPage() {
     "AWAITING_DEPOSIT",
     "DEPOSIT_PENDING",
   ].includes(tx.status);
+  const canAcceptMatch = ["MATCH_FOUND", "MATCHED"].includes(tx.status);
   const canCancel =
-    ["PENDING_REQUEST", "MATCH_FOUND", "AWAITING_DEPOSIT"].includes(
-      tx.status,
-    ) && !tx.paymentConfirmationRequested;
+    [
+      "PENDING_REQUEST",
+      "PENDING_MATCH",
+      "WAITING_FOR_MATCH",
+      "MATCH_PENDING",
+      "NO_MATCH_FOUND",
+      "MATCH_FOUND",
+      "MATCHED",
+      "AWAITING_DEPOSIT",
+    ].includes(tx.status) && !tx.paymentConfirmationRequested;
   const canDispute = [
     "AWAITING_DEPOSIT",
     "DEPOSIT_CONFIRMED",
     "BOTH_DEPOSITS_CONFIRMED",
     "PROCESSING_PAYOUT",
+    "READY_FOR_PAYOUT",
     "COMPLETED",
   ].includes(tx.status);
 
   const requestPaymentConfirmation = async () => {
+    setActionLoading("payment");
     const updated = await transfersService.requestPaymentConfirmation(tx.id);
     setTx(updated);
     setMessage(
       "Payment confirmation request sent. FlowX will verify your deposit through the payment provider.",
     );
+    setActionLoading("");
+  };
+
+  const acceptMatch = async () => {
+    setActionLoading("accept");
+    try {
+      const updated = await transfersService.acceptMatch(
+        tx.id,
+        tx.matchId ?? tx.counterpartyTransferId,
+      );
+      navigate(`/transfer/escrow/${updated.id}`, {
+        state: { message: "Match accepted. Confirm escrow deposit next." },
+      });
+    } catch {
+      setMessage(SERVER_CONNECTION_ERROR);
+      setActionLoading("");
+    }
+  };
+
+  const rejectMatch = async () => {
+    setActionLoading("reject");
+    try {
+      const updated = await transfersService.rejectMatch(
+        tx.id,
+        tx.matchId ?? tx.counterpartyTransferId,
+      );
+      setTx(updated);
+      setMessage("Match rejected.");
+    } catch {
+      setMessage(SERVER_CONNECTION_ERROR);
+    } finally {
+      setActionLoading("");
+    }
   };
 
   const cancelRequest = async () => {
@@ -96,9 +162,9 @@ export default function TransactionStatusPage() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-bg flex">
+    <div className="min-h-screen bg-surface-bg flex overflow-x-hidden">
       <Sidebar />
-      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen">
+      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen min-w-0">
         <Navbar />
         <main className="pt-24 pb-12 px-4 sm:px-8 lg:px-10 max-w-5xl mx-auto w-full flex-1 space-y-6">
           <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-ambient space-y-6">
@@ -111,8 +177,8 @@ export default function TransactionStatusPage() {
                     : "User transfer tracking view"}
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-full text-xs font-black bg-slate-100">
-                {statusLabel(tx.status)}
+              <span className={transferStatusBadgeClass(tx.status)}>
+                {formatTransferStatus(tx.status)}
               </span>
             </div>
 
@@ -226,7 +292,7 @@ export default function TransactionStatusPage() {
                     <span className="block text-[10px] font-black uppercase text-slate-400">
                       Deposit status
                     </span>
-                    {statusLabel(tx.status)}
+                    {formatTransferStatus(tx.status)}
                   </p>
                 </div>
                 <p className="text-sm text-slate-500">
@@ -238,11 +304,46 @@ export default function TransactionStatusPage() {
                   <button
                     type="button"
                     onClick={requestPaymentConfirmation}
+                    disabled={actionLoading === "payment"}
                     className="px-4 py-2 rounded-xl bg-navy-900 text-white font-semibold"
                   >
-                    I have completed payment
+                    {actionLoading === "payment"
+                      ? "Sending..."
+                      : "I have completed payment"}
                   </button>
                 )}
+              </div>
+            )}
+
+            {isUser && canAcceptMatch && (
+              <div className="p-4 rounded-2xl bg-teal-50 border border-teal-100 space-y-3">
+                <p className="font-bold text-teal-800">Match Details</p>
+                <p className="text-sm text-teal-800">
+                  A compatible opposite transfer is available. Accept the match
+                  to continue to escrow deposit.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    disabled={actionLoading === "accept"}
+                    onClick={acceptMatch}
+                    className="px-4 py-2 rounded-xl bg-navy-900 text-white font-semibold disabled:opacity-60"
+                  >
+                    {actionLoading === "accept"
+                      ? "Accepting..."
+                      : "Accept Match"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={actionLoading === "reject"}
+                    onClick={rejectMatch}
+                    className="px-4 py-2 rounded-xl bg-white border border-teal-100 text-teal-700 font-semibold disabled:opacity-60"
+                  >
+                    {actionLoading === "reject"
+                      ? "Rejecting..."
+                      : "Reject Match"}
+                  </button>
+                </div>
               </div>
             )}
 
@@ -265,7 +366,7 @@ export default function TransactionStatusPage() {
             {["FAILED", "REFUNDED"].includes(tx.status) && (
               <div className="p-4 rounded-2xl bg-rose-50 border border-rose-100">
                 <p className="font-bold text-rose-700">
-                  {statusLabel(tx.status)}
+                  {formatTransferStatus(tx.status)}
                 </p>
                 <p className="text-sm text-rose-600">
                   This transfer is closed. Contact operations if you need more
@@ -299,6 +400,23 @@ export default function TransactionStatusPage() {
                 relevant review queues.
               </div>
             )}
+          </div>
+        </main>
+        <Footer />
+      </div>
+    </div>
+  );
+}
+
+function MainShell({ children }: { children: ReactNode }) {
+  return (
+    <div className="min-h-screen bg-surface-bg flex overflow-x-hidden">
+      <Sidebar />
+      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen min-w-0">
+        <Navbar />
+        <main className="pt-24 pb-12 px-4 sm:px-8 lg:px-10 max-w-5xl mx-auto w-full flex-1">
+          <div className="bg-white border border-slate-100 rounded-2xl p-6 text-sm text-slate-500">
+            {children}
           </div>
         </main>
         <Footer />

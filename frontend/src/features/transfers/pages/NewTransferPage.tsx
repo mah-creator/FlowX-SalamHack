@@ -16,6 +16,7 @@ import Navbar from "@/shared/components/layout/Navbar";
 import Sidebar from "@/shared/components/layout/Sidebar";
 import useCurrentUser from "@/features/auth/hooks/useCurrentUser";
 import { adminService } from "@/services/admin.service";
+import { SERVER_CONNECTION_ERROR } from "@/services/apiClient";
 import { transfersService } from "@/services/transfers.service";
 import { verificationService } from "@/services/verification.service";
 import type { ApiConfig } from "@/services/types";
@@ -161,19 +162,17 @@ export default function NewTransferPage() {
       navigate(`/transfer/match/${saved.id}`, {
         state: { message: "Transfer request submitted." },
       });
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to create transfer.",
-      );
+    } catch {
+      setError(SERVER_CONNECTION_ERROR);
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-surface-bg flex">
+    <div className="min-h-screen bg-surface-bg flex overflow-x-hidden">
       <Sidebar />
-      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen">
+      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen min-w-0">
         <Navbar />
         <main className="pt-20 pb-12 px-4 sm:px-8 lg:px-10 flex items-center justify-center min-h-[calc(100vh-64px)] w-full flex-1">
           <motion.div

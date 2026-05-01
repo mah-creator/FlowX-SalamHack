@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowLeftRight,
   BarChart3,
   Bell,
+  Clock3,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -23,6 +24,7 @@ import useCurrentUser from "@/features/auth/hooks/useCurrentUser";
 const userNavItems: Array<{ label: string; href: string; icon: LucideIcon }> = [
   { label: "User Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "My Transfers", href: "/transfers", icon: ArrowLeftRight },
+  { label: "Pending Requests", href: "/transfer/pending", icon: Clock3 },
   { label: "Wallet / Escrow", href: "/wallet", icon: Wallet },
   { label: "Verified Agents", href: "/marketplace", icon: Store },
   { label: "My Verification", href: "/verification", icon: Shield },
@@ -55,12 +57,27 @@ export default function Navbar() {
 
   const visibleNavItems = isAdmin ? adminNavItems : userNavItems;
 
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsMobileMenuOpen(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [isMobileMenuOpen]);
+
   return (
-    <header className="fixed top-0 left-0 lg:left-64 right-0 h-16 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 sm:px-8 flex items-center justify-between">
+    <header className="fixed top-0 left-0 lg:left-64 right-0 h-16 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between">
       <div className="flex items-center gap-8 flex-1">
         <button
           type="button"
           onClick={() => setIsMobileMenuOpen(true)}
+          aria-label="Open navigation menu"
           className="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors"
         >
           <Menu size={24} />
@@ -147,6 +164,7 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(false)}
+              aria-label="Close navigation menu"
               className="p-2 -mr-2 text-slate-400 hover:text-navy-900"
             >
               <X size={24} />
@@ -160,7 +178,8 @@ export default function Navbar() {
                 location.pathname.startsWith(`${item.href}/`) ||
                 (!isAdmin &&
                   item.href === "/transfers" &&
-                  location.pathname.startsWith("/transfer"));
+                  location.pathname.startsWith("/transfer") &&
+                  location.pathname !== "/transfer/pending");
               return (
                 <Link
                   key={item.href}

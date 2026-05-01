@@ -16,6 +16,10 @@ import { transfersService } from "@/services/transfers.service";
 import { walletService } from "@/services/wallet.service";
 import { verificationService } from "@/services/verification.service";
 import { notificationsService } from "@/services/notifications.service";
+import {
+  formatTransferStatus,
+  transferStatusBadgeClass,
+} from "@/services/status";
 import type {
   ApiNotification,
   ApiTransfer,
@@ -50,9 +54,7 @@ export default function DashboardPage() {
         },
       )
       .catch(() =>
-        setError(
-          "Dashboard data could not be loaded. Check that JSON Server is running.",
-        ),
+        setError("We could not connect to the server. Please try again."),
       );
   }, [user?.id]);
 
@@ -87,12 +89,10 @@ export default function DashboardPage() {
     },
   ];
 
-  const statusLabel = (status: string) => status.replace(/_/g, " ");
-
   return (
-    <div className="min-h-screen bg-surface-bg flex">
+    <div className="min-h-screen bg-surface-bg flex overflow-x-hidden">
       <Sidebar />
-      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen">
+      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen min-w-0">
         <Navbar />
         <main className="pt-20 pb-12 px-4 sm:px-8 lg:px-10 max-w-7xl mx-auto w-full flex-1">
           <header className="flex flex-col gap-6 mb-8 lg:mb-12">
@@ -111,12 +111,26 @@ export default function DashboardPage() {
                       size={12}
                       className="fill-teal-500 text-white"
                     />
-                    {statusLabel(verificationStatus)}
+                    {formatTransferStatus(verificationStatus)}
                   </span>
                 </motion.div>
-                <p className="text-sm sm:text-base text-slate-500 font-medium leading-relaxed">
-                  Here is your account summary from the API.
-                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate("/transfer/new")}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-navy-900 px-4 py-2.5 text-sm font-bold text-white hover:bg-navy-800"
+                >
+                  New Transfer
+                  <ArrowRight className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate("/transfer/pending")}
+                  className="inline-flex items-center justify-center rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-200"
+                >
+                  Pending Requests
+                </button>
               </div>
             </div>
             {error && (
@@ -174,7 +188,7 @@ export default function DashboardPage() {
                   <div className="flex flex-col sm:flex-row justify-between items-start mb-6 gap-6">
                     <div>
                       <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest bg-teal-50 text-teal-600 ring-1 ring-teal-500/10">
-                        {statusLabel(item.status)}
+                        {formatTransferStatus(item.status)}
                       </span>
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">
                         ID: {item.id}
@@ -241,13 +255,11 @@ export default function DashboardPage() {
                         </p>
                         <p
                           className={cn(
-                            "text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full inline-block mt-1",
-                            tx.status === "COMPLETED"
-                              ? "bg-teal-50 text-teal-600"
-                              : "bg-slate-50 text-slate-400",
+                            "mt-1",
+                            transferStatusBadgeClass(tx.status),
                           )}
                         >
-                          {statusLabel(tx.status)}
+                          {formatTransferStatus(tx.status)}
                         </p>
                       </div>
                     </div>

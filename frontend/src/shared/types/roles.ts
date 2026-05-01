@@ -8,4 +8,5 @@ export interface CurrentUser {
   status: "verified" | "pending" | "suspended";
   country?: string;
   trustScore?: number;
+  token?: string;
 }

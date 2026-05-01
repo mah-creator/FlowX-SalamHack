@@ -19,7 +19,11 @@ import { usersService } from "@/services/users.service";
 import { walletService } from "@/services/wallet.service";
 import { disputesService } from "@/services/disputes.service";
 import { verificationService } from "@/services/verification.service";
-import { get } from "@/services/apiClient";
+import { get, SERVER_CONNECTION_ERROR } from "@/services/apiClient";
+import {
+  formatTransferStatus,
+  transferStatusBadgeClass,
+} from "@/services/status";
 import type {
   ApiNotification,
   ApiTransfer,
@@ -98,11 +102,7 @@ export function TransfersPage() {
     setError(null);
     void request
       .then(setTransfers)
-      .catch(() =>
-        setError(
-          "Transfers could not be loaded. Check that JSON Server is running.",
-        ),
-      )
+      .catch(() => setError(SERVER_CONNECTION_ERROR))
       .finally(() => setLoading(false));
   }, [isAdmin, user?.id]);
 
@@ -142,7 +142,7 @@ export function TransfersPage() {
         >
           {statusOptions.map((status) => (
             <option key={status} value={status}>
-              {status === "ALL" ? "All statuses" : status.replace(/_/g, " ")}
+              {status === "ALL" ? "All statuses" : formatTransferStatus(status)}
             </option>
           ))}
         </select>
@@ -172,7 +172,7 @@ export function TransfersPage() {
                 </p>
               </div>
               <span className="px-2 py-1 rounded-full text-[10px] font-black bg-slate-100 text-slate-500">
-                {tx.status.replace(/_/g, " ")}
+                {formatTransferStatus(tx.status)}
               </span>
             </div>
             <p className="mt-4 text-xl font-black text-navy-900">
@@ -216,11 +216,7 @@ export function UsersPage() {
         setWallets(walletRows);
         setVerifications(verificationRows);
       })
-      .catch(() =>
-        setError(
-          "Users could not be loaded. Check that JSON Server is running.",
-        ),
-      )
+      .catch(() => setError(SERVER_CONNECTION_ERROR))
       .finally(() => setLoading(false));
   }, []);
 
@@ -369,7 +365,7 @@ export function UsersPage() {
                         {selected.role}
                       </span>
                       <span className={statusBadgeClass(verificationStatus)}>
-                        {verificationStatus.replace(/_/g, " ")}
+                        {formatTransferStatus(verificationStatus)}
                       </span>
                     </div>
                   </div>
@@ -415,7 +411,7 @@ export function UsersPage() {
                     {[
                       [
                         "Verification status",
-                        selectedVerification.status.replace(/_/g, " "),
+                        formatTransferStatus(selectedVerification.status),
                       ],
                       ["KYC level", selectedVerification.level],
                       ["Document type", selectedVerification.documentType],
@@ -544,10 +540,10 @@ export function UsersPage() {
                           <span
                             className={cn(
                               "mt-2",
-                              statusBadgeClass(transfer.status),
+                              transferStatusBadgeClass(transfer.status),
                             )}
                           >
-                            {transfer.status.replace(/_/g, " ")}
+                            {formatTransferStatus(transfer.status)}
                           </span>
                         </div>
                       </div>
@@ -580,11 +576,7 @@ export function MarketplacePage() {
     setError(null);
     void get<ApiAgent[]>("/agents")
       .then(setData)
-      .catch(() =>
-        setError(
-          "Verified agents could not be loaded. Check that JSON Server is running.",
-        ),
-      )
+      .catch(() => setError(SERVER_CONNECTION_ERROR))
       .finally(() => setLoading(false));
   }, []);
 
@@ -650,11 +642,7 @@ export function WalletPage() {
     void walletService
       .getUserWallets(user.id)
       .then(setWallets)
-      .catch(() =>
-        setError(
-          "Wallet could not be loaded. Check that JSON Server is running.",
-        ),
-      )
+      .catch(() => setError(SERVER_CONNECTION_ERROR))
       .finally(() => setLoading(false));
   }, [user?.id]);
 
@@ -773,11 +761,7 @@ export function AnalyticsPage() {
           },
         ]);
       })
-      .catch(() =>
-        setError(
-          "Analytics could not be loaded. Check that JSON Server is running.",
-        ),
-      )
+      .catch(() => setError(SERVER_CONNECTION_ERROR))
       .finally(() => setLoading(false));
   }, []);
 
@@ -842,11 +826,7 @@ export function RequestsPage() {
           ),
         ),
       )
-      .catch(() =>
-        setError(
-          "Requests could not be loaded. Check that JSON Server is running.",
-        ),
-      )
+      .catch(() => setError(SERVER_CONNECTION_ERROR))
       .finally(() => setLoading(false));
   }, []);
 
@@ -881,7 +861,7 @@ export function RequestsPage() {
                 </p>
               </div>
               <span className="text-xs font-black text-slate-500">
-                {request.status.replace(/_/g, " ")}
+                {formatTransferStatus(request.status)}
               </span>
             </div>
             <div className="flex gap-2 mt-4">
@@ -935,7 +915,7 @@ export function RequestDetailPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-slate-500">
             <p>
               <strong className="text-navy-900">Status:</strong>{" "}
-              {request.status.replace(/_/g, " ")}
+              {formatTransferStatus(request.status)}
             </p>
             <p>
               <strong className="text-navy-900">Amount:</strong>{" "}
@@ -978,11 +958,7 @@ export function NotificationsPage() {
     setError(null);
     void request
       .then(setNotifications)
-      .catch(() =>
-        setError(
-          "Notifications could not be loaded. Check that JSON Server is running.",
-        ),
-      )
+      .catch(() => setError(SERVER_CONNECTION_ERROR))
       .finally(() => setLoading(false));
   }, [user?.id]);
 

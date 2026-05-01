@@ -1,6 +1,5 @@
 import type { LoginCredentials, UserRole } from "@/features/auth/types";
-import { get } from "@/services/apiClient";
-import { authService, toCurrentUser } from "@/services/auth.service";
+import { authService } from "@/services/auth.service";
 import type { ApiUser } from "@/services/types";
 import type { CurrentUser } from "@/shared/types/roles";
 
@@ -17,21 +16,14 @@ export async function signup(payload: {
   role?: UserRole;
   accountType?: ApiUser["accountType"];
 }): Promise<CurrentUser> {
-  const email = payload.email.trim().toLowerCase();
-  const existing = await get<ApiUser[]>(
-    `/users?email=${encodeURIComponent(email)}`,
-  )
-    .then((users) => users[0])
-    .catch(() => null);
-  if (existing) {
-    throw new Error("Email already exists. Please log in instead.");
-  }
-
-  return authService.signup({ ...payload, email });
+  return authService.signup({
+    ...payload,
+    email: payload.email.trim().toLowerCase(),
+  });
 }
 
 export function logout() {
-  authService.logout();
+  void authService.logout();
 }
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
@@ -42,12 +34,24 @@ export type AuthPayload = { email: string; password: string };
 
 export const authApi = {
   async login(payload: AuthPayload): Promise<ApiUser> {
-    const users = await get<ApiUser[]>(
-      `/users?email=${encodeURIComponent(payload.email)}&password=${encodeURIComponent(payload.password)}`,
-    );
-    const found = users[0];
-    if (!found) throw new Error("Invalid credentials");
-    return found;
+    const current = await login(payload);
+    if (!current) throw new Error("Invalid credentials");
+    return {
+      id: current.id,
+      fullName: current.name,
+      email: current.email,
+      role: current.role === "admin" ? "ADMIN" : "USER",
+      accountType: current.role === "admin" ? "Admin" : "Individual",
+      country: current.country ?? "Gaza",
+      phone: "",
+      verified: current.status === "verified",
+      kycLevel: current.status === "verified" ? "Verified" : "Basic",
+      verificationStatus:
+        current.status === "verified" ? "VERIFIED" : "PENDING",
+      trustScore: current.trustScore ?? 70,
+      status: current.status === "suspended" ? "suspended" : "active",
+      createdAt: "",
+    };
   },
   async signup(payload: AuthPayload & { fullName?: string }): Promise<ApiUser> {
     const current = await signup({
@@ -55,17 +59,20 @@ export const authApi = {
       email: payload.email,
       password: payload.password,
     });
-    const created = await get<ApiUser[]>(
-      `/users?email=${encodeURIComponent(current.email)}`,
-    );
-    return (
-      created[0] ??
-      ({
-        id: current.id,
-        fullName: current.name,
-        email: current.email,
-        role: current.role === "admin" ? "ADMIN" : "USER",
-      } as ApiUser)
-    );
+    return {
+      id: current.id,
+      fullName: current.name,
+      email: current.email,
+      role: current.role === "admin" ? "ADMIN" : "USER",
+      accountType: "Individual",
+      country: current.country ?? "Gaza",
+      phone: "",
+      verified: current.status === "verified",
+      kycLevel: "Basic",
+      verificationStatus: "PENDING",
+      trustScore: current.trustScore ?? 70,
+      status: "pending",
+      createdAt: "",
+    };
   },
 };

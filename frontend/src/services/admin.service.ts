@@ -1,4 +1,8 @@
 import { get, patch, post } from "./apiClient";
+import { toTransactions } from "./adapters/transaction.adapter";
+import { toTransfers } from "./adapters/transfer.adapter";
+import { toUsers } from "./adapters/user.adapter";
+import { toVerifications } from "./adapters/verification.adapter";
 import type {
   ApiAuditLog,
   ApiConfig,
@@ -30,9 +34,9 @@ export const adminService = {
   async getDashboardStats() {
     const [users, transfers, verifications, disputes, config, auditLogs] =
       await Promise.all([
-        get<ApiUser[]>("/users"),
-        get<ApiTransfer[]>("/transfers"),
-        get<ApiVerification[]>("/verifications"),
+        get<unknown>("/users").then(toUsers),
+        get<unknown>("/transfers").then(toTransfers),
+        get<unknown>("/verifications").then(toVerifications),
         get<ApiDispute[]>("/disputes"),
         get<ApiConfig>("/config"),
         get<ApiAuditLog[]>("/auditLogs"),
@@ -40,7 +44,25 @@ export const adminService = {
     return { users, transfers, verifications, disputes, config, auditLogs };
   },
 
-  getVerificationQueue: () => get<ApiVerification[]>("/verifications"),
+  getVerificationQueue: async () =>
+    toVerifications(await get<unknown>("/verifications")),
+
+  getAdminTransactions: async () =>
+    toTransactions(await get<unknown>("/admin/transactions")),
+  approveTransaction: async (id: string) =>
+    post(`/admin/transactions/${encodeURIComponent(id)}/approve`),
+  flagTransactionRisk: async (id: string) =>
+    post(`/admin/transactions/${encodeURIComponent(id)}/flag-risk`),
+  refundTransaction: async (id: string) =>
+    post(`/admin/transactions/${encodeURIComponent(id)}/refund`),
+  resolveTransactionDispute: async (
+    id: string,
+    payload: { outcome: "Completed" | "Refunded" },
+  ) =>
+    post(
+      `/admin/transactions/${encodeURIComponent(id)}/resolve-dispute`,
+      payload,
+    ),
 
   async approveVerification(
     userId: string,
@@ -136,7 +158,10 @@ export const adminService = {
     return verification;
   },
 
-  getRiskQueue: () => get<ApiTransfer[]>("/transfers?status=UNDER_REVIEW"),
+  getRiskQueue: async () => {
+    const transfers = toTransfers(await get<unknown>("/transfers"));
+    return transfers.filter((transfer) => transfer.status === "UNDER_REVIEW");
+  },
   approveRiskReview: (transferId: string) =>
     post<ApiTransfer>(
       `/transfers/${encodeURIComponent(transferId)}/risk-approval`,

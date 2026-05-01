@@ -24,18 +24,27 @@ export type ApiUser = {
 
 export type TransferStatus =
   | "PENDING_REQUEST"
+  | "PENDING_MATCH"
+  | "WAITING_FOR_MATCH"
+  | "MATCH_PENDING"
+  | "NO_MATCH_FOUND"
   | "MATCH_FOUND"
+  | "MATCHED"
   | "AWAITING_DEPOSIT"
   | "DEPOSIT_PENDING"
+  | "ESCROW_FUNDED"
   | "DEPOSIT_CONFIRMED"
   | "BOTH_DEPOSITS_CONFIRMED"
   | "PROCESSING_PAYOUT"
+  | "READY_FOR_PAYOUT"
   | "COMPLETED"
   | "UNDER_REVIEW"
+  | "RISK_REVIEW"
   | "DISPUTED"
   | "REFUNDED"
   | "FAILED"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "REJECTED";
 
 export type ApiTransfer = {
   id: string;
@@ -57,6 +66,7 @@ export type ApiTransfer = {
   riskLevel: "low" | "medium" | "high";
   paymentConfirmationRequested: boolean;
   counterpartyTransferId?: string | null;
+  matchId?: string | null;
 };
 
 export type ApiWallet = {
@@ -127,4 +137,44 @@ export type ApiAuditLog = {
   entityType: string;
   entityId: string;
   createdAt: string;
+};
+
+export type ApiTransactionStatus =
+  | "Pending Request"
+  | "Match Found"
+  | "Awaiting Deposits"
+  | "Deposit Confirmed Partially"
+  | "Both Deposits Confirmed"
+  | "Processing Payouts"
+  | "Completed"
+  | "Under Review"
+  | "Failed"
+  | "Refunded"
+  | "Disputed";
+
+export type ApiTransaction = {
+  id: string;
+  source: string;
+  destination: string;
+  amount: number;
+  currency: "USD" | "EGP" | "ILS";
+  status: ApiTransactionStatus;
+  feePercent: number;
+  exchangeRate: number;
+  receivableAmount: number;
+  createdAt: string;
+  depositA: boolean;
+  depositB: boolean;
+  disputeReason?: string | null;
+  auditLog?: Array<{
+    time: string;
+    actor: string;
+    action: string;
+  }>;
+};
+
+export type ApiHealth = {
+  status: string;
+  service?: string;
+  version?: string;
 };

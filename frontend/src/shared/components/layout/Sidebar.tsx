@@ -4,6 +4,7 @@ import {
   ArrowLeftRight,
   BarChart3,
   Bell,
+  Clock3,
   LayoutDashboard,
   LogOut,
   Plus,
@@ -19,6 +20,7 @@ import useCurrentUser from "@/features/auth/hooks/useCurrentUser";
 const userNavItems: Array<{ label: string; href: string; icon: LucideIcon }> = [
   { label: "User Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "My Transfers", href: "/transfers", icon: ArrowLeftRight },
+  { label: "Pending Requests", href: "/transfer/pending", icon: Clock3 },
   { label: "Wallet / Escrow", href: "/wallet", icon: Wallet },
   { label: "Verified Agents", href: "/marketplace", icon: Store },
   { label: "My Verification", href: "/verification", icon: Shield },
@@ -86,7 +88,8 @@ export default function Sidebar() {
             location.pathname.startsWith(`${item.href}/`) ||
             (!isAdmin &&
               item.href === "/transfers" &&
-              location.pathname.startsWith("/transfer")) ||
+              location.pathname.startsWith("/transfer") &&
+              location.pathname !== "/transfer/pending") ||
             (item.href === "/admin/dashboard" &&
               location.pathname === "/dashboard" &&
               isAdmin);

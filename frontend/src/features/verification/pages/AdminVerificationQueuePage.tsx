@@ -170,10 +170,7 @@ export default function AdminVerificationQueuePage() {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr
-                key={row.id}
-                className="border-t border-slate-100 align-top"
-              >
+              <tr key={row.id} className="border-t border-slate-100 align-top">
                 <td className="px-3 py-4 font-black text-navy-900 wrap-break-word">
                   {row.user?.fullName ?? "Unknown user"}
                 </td>
@@ -193,8 +190,7 @@ export default function AdminVerificationQueuePage() {
                   <span
                     className={cn(
                       "inline-block px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap",
-                      statusStyles[row.status] ??
-                        "bg-slate-100 text-slate-500",
+                      statusStyles[row.status] ?? "bg-slate-100 text-slate-500",
                     )}
                   >
                     {formatStatus(row.status)}

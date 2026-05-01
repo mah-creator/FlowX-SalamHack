@@ -335,11 +335,7 @@
       "Saudi Arabia",
       "United Arab Emirates"
     ],
-    "supportedCurrencies": [
-      "USD",
-      "EGP",
-      "ILS"
-    ],
+    "supportedCurrencies": ["USD", "EGP", "ILS"],
     "supportedCorridors": [
       {
         "source": "Gaza",

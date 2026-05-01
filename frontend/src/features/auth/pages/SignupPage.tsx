@@ -48,7 +48,7 @@ export default function SignupPage() {
         const authenticatedUser = await login({ email, password });
         if (!authenticatedUser) {
           setFormError(
-            "Invalid credentials. Try user@flowx.demo / user123 or admin@flowx.demo / admin123.",
+            "Invalid credentials or the authentication service is unavailable.",
           );
           return;
         }
@@ -62,7 +62,7 @@ export default function SignupPage() {
         });
         if (!createdUser) {
           setFormError(
-            "Signup failed. Check that JSON Server is running or try different email.",
+            "Signup failed. Please check your details and try again.",
           );
           return;
         }
@@ -176,7 +176,7 @@ export default function SignupPage() {
             <p className="text-slate-500 mb-8 font-medium">
               {mode === "signup"
                 ? "Create an account to access secure transfer workflows."
-                : "Log in with the local JSON Server credentials below to manage transfers."}
+                : "Log in to manage transfers and account activity."}
             </p>
 
             <div className="grid grid-cols-2 gap-3 mb-8">
@@ -312,7 +312,7 @@ export default function SignupPage() {
                     </label>
                     {mode === "login" && (
                       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-teal-600">
-                        Local API
+                        Secure Login
                       </span>
                     )}
                   </div>
@@ -342,7 +342,7 @@ export default function SignupPage() {
                   </div>
                   {mode === "signup" && (
                     <p className="text-[10px] text-slate-400 font-bold tracking-tight ml-1">
-                      Signup creates a local API user session.
+                      Signup creates your FlowX account session.
                     </p>
                   )}
                 </div>
