@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const authenticatedUser = await authApi.login(credentials);
       setUser(authenticatedUser);
       if (!authenticatedUser) {
-        setError("Invalid credentials");
+        setError("Invalid email or password.");
       }
       return authenticatedUser;
     } finally {
@@ -92,8 +92,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(createdUser);
         return createdUser;
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Signup failed");
-        return null;
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Signup failed. Please try again.";
+        setError(message);
+        throw new Error(message);
       } finally {
         setLoading(false);
       }

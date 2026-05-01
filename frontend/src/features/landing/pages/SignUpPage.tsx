@@ -106,8 +106,12 @@ export default function SignUpPage() {
           return;
         }
         navigate("/dashboard", { replace: true });
-      } catch {
-        setFormError("Signup failed. Please try again.");
+      } catch (error) {
+        setFormError(
+          error instanceof Error
+            ? error.message
+            : "Signup failed. Please try again.",
+        );
       }
     }
   };

@@ -62,14 +62,14 @@ export default function LoginPage() {
       try {
         const user = await login({ email, password });
         if (!user) {
-          setFormError(
-            "Invalid credentials. Try user@flowx.demo / user123 or admin@flowx.demo / admin123.",
-          );
+          setFormError("Invalid email or password.");
           return;
         }
         navigate("/dashboard", { replace: true });
-      } catch {
-        setFormError("Authentication failed. Please try again.");
+      } catch (error) {
+        setFormError(
+          error instanceof Error ? error.message : "Invalid email or password.",
+        );
       }
     }
   };
