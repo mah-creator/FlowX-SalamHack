@@ -1,6 +1,4 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ??
-  "https://flowx-salamhack-production.up.railway.app";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const AUTH_TOKEN_KEY = "flowx_auth_token";
 
 export const SERVER_CONNECTION_ERROR =
@@ -26,6 +24,9 @@ type WrappedResponse<T> =
 
 function buildUrl(path: string) {
   if (/^https?:\/\//i.test(path)) return path;
+  if (!API_BASE_URL) {
+    throw new ApiClientError();
+  }
   return `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
